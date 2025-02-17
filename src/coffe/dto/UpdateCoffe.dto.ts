@@ -6,4 +6,7 @@ export class UpdateCoffeDto extends PartialType(CreateCoffeDto) {
   name?: string;
   description?: string;
   flavors?: Flavor[];
+  created_at? : Date;
+  updated_at? : Date;
+  isAvailble?: boolean;
 }

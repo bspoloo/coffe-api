@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Coffe } from 'src/typeorm/entities/coffe.entity';
 import { Repository } from 'typeorm';
@@ -25,8 +25,8 @@ export class CoffeService {
     }
     public async findOne(id: number): Promise<Coffe> {
         const coffe = await this.coffeRepository.findOne({
-            where: {id: id},
-            relations:{
+            where: { id: id },
+            relations: {
                 flavors: true
             }
         });
@@ -38,10 +38,14 @@ export class CoffeService {
     public async create(coffeDto: CreateCoffeDto): Promise<Coffe> {
         try {
             const flavors = await Promise.all(
-                coffeDto.flavors.map(({name}) => this.preloadFlavorByName(name))
+                coffeDto.flavors.map(({ name }) => this.preloadFlavorByName(name))
             );
+            
+            coffeDto.created_at = new Date();
+            coffeDto.updated_at = new Date();
+            coffeDto.isAvailble = true;
 
-            const coffeEntity = this.coffeRepository.create({...coffeDto, flavors });
+            const coffeEntity = this.coffeRepository.create({ ...coffeDto, flavors });
             return this.coffeRepository.save(coffeEntity);
         } catch (error) {
             console.error('Create a new Coffe failure', error.message ?? error);
@@ -53,41 +57,44 @@ export class CoffeService {
     }
     public async update(id: number, coffeDto: UpdateCoffeDto): Promise<Coffe> {
         try {
-            const flavors = coffeDto.flavors &&(
-                await Promise.all(
-                    coffeDto.flavors.map(({name}) => this.preloadFlavorByName(name))
-                )
-            )
+            const coffe = await this.coffeRepository.findOne({
+                where: { id: id },
+                relations: {
+                    flavors: true
+                }
+            });
 
-            await this.coffeRepository.preload({ id , ...coffeDto, flavors} );
-            const updatedCoffe = await this.coffeRepository.findOneBy({ id });
-            if (!updatedCoffe) {
-                throw new Error(`Coffe with id ${id} not found after update`);
+            if (!coffe) {
+                throw new NotFoundException(`Coffe with id ${id} not found`);
             }
+            coffeDto.updated_at = new Date();
+            const updatedCoffe = await this.coffeRepository.save(coffeDto);
             return updatedCoffe;
+
         } catch (error) {
             console.error('Update a Coffe failure', error.message ?? error);
             throw new HttpException(
-                `failed create coffe with id: ${id}.`,
+                `Failed to update coffee with id: ${id}.`,
                 HttpStatus.BAD_REQUEST,
             );
         }
     }
+
     public async remove(id: number): Promise<Coffe> {
-        const coffeDeleted = await this.coffeRepository.findOneBy({ id : id });
+        const coffeDeleted = await this.coffeRepository.findOneBy({ id: id });
         if (!coffeDeleted) {
             throw new Error(`Coffe with id ${id} not found`);
         }
-        
+
         await this.coffeRepository.delete(id);
         return coffeDeleted;
     }
-    private async preloadFlavorByName(name : string): Promise<Flavor>{
+    private async preloadFlavorByName(name: string): Promise<Flavor> {
         const existingFlavor = await this.flavorRepository.findOne({
-            where: {name}
+            where: { name }
         });
-        if(!existingFlavor){
-            return this.flavorRepository.create({name})
+        if (!existingFlavor) {
+            return this.flavorRepository.create({ name })
         }
         return existingFlavor;
     }

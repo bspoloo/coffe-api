@@ -6,11 +6,20 @@ export class Coffe {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ length: 100 })
   name: string;
 
   @Column()
   description: string;
+
+  @Column({type: 'timestamp'})
+  created_at : Date;
+
+  @Column({type: 'timestamp'})
+  updated_at : Date;
+
+  @Column({default: true})
+  isAvaile : boolean;
 
   @JoinTable()
   @ManyToMany(

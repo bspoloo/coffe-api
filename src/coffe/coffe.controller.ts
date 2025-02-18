@@ -57,15 +57,15 @@ export class CoffeController {
     }
 
     @Delete(':id')
-    public remove(@Param('id') id: number): Promise<Coffe | void>{
+    public remove(@Param('id') id: number, @Res() response): Promise<Coffe | void>{
         // return this.coffeService.remove(id);
 
         return this.coffeService.remove(id).then(
             coffe => {
                 response.status(HttpStatus.OK).json(coffe)
             }
-        ).catch(() => {
-            response.status(HttpStatus.FORBIDDEN).json({messaje : `Failed to delete coffe with id => ${id}`});
+        ).catch((error) => {
+            response.status(HttpStatus.FORBIDDEN).json({messaje : `Failed to delete coffe with id => ${id} with error:${error}`});
         });
     }
 }

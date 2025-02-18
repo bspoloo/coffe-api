@@ -85,7 +85,6 @@ export class CoffeService {
         if (!coffeDeleted) {
             throw new Error(`Coffe with id ${id} not found`);
         }
-
         await this.coffeRepository.delete(id);
         return coffeDeleted;
     }

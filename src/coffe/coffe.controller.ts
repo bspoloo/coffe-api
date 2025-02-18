@@ -15,7 +15,7 @@ export class CoffeController {
     public findAll(@Res() response) : Promise<void | Coffe[] >{
         return this.coffeService.findAll().then(
             coffes => {
-                response.status(HttpStatus.FOUND).json({coffes})
+                response.status(HttpStatus.OK).json(coffes)
             }
         ).catch(() => {
             response.status(HttpStatus.FORBIDDEN).json({messaje : 'not found coffes in database'});
@@ -26,7 +26,7 @@ export class CoffeController {
     public findOne(@Param('id') id : number, @Res() response) : Promise<void | Coffe >{
         return this.coffeService.findOne(id).then(
             coffe => {
-                response.status(HttpStatus.FOUND).json(coffe)
+                response.status(HttpStatus.OK).json(coffe)
             }
         ).catch(() => {
             response.status(HttpStatus.FORBIDDEN).json({messaje : `not found coffe whit id => ${id}`});
@@ -38,7 +38,7 @@ export class CoffeController {
 
         return this.coffeService.create(coffeDto).then(
             coffe => {
-                response.status(HttpStatus.FOUND).json(coffe)
+                response.status(HttpStatus.OK).json(coffe)
             }
         ).catch((error) => {
             response.status(HttpStatus.FORBIDDEN).json({messaje : `Failed to create coffe => ${coffeDto.name} ${error}`});
@@ -49,7 +49,7 @@ export class CoffeController {
         // return this.coffeService.update(id, coffeDto);
         return this.coffeService.update(id, coffeDto).then(
             coffe => {
-                response.status(HttpStatus.ACCEPTED).json(coffe)
+                response.status(HttpStatus.OK).json(coffe)
             }
         ).catch(() => {
             response.status(HttpStatus.FORBIDDEN).json({messaje : `Failed to update coffe with id => ${id}`});
@@ -62,7 +62,7 @@ export class CoffeController {
 
         return this.coffeService.remove(id).then(
             coffe => {
-                response.status(HttpStatus.ACCEPTED).json(coffe)
+                response.status(HttpStatus.OK).json(coffe)
             }
         ).catch(() => {
             response.status(HttpStatus.FORBIDDEN).json({messaje : `Failed to delete coffe with id => ${id}`});
